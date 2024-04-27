@@ -13,21 +13,22 @@ from src.imgui_menu import menu
 
 
 class Overlay():
-    # Инициализация imgui оверлея
     def __init__(self, target_process: str) -> None:
 
-        # Инициализация pygame
+        # init pygame
         pygame.init()
         os.environ['SDL_VIDEO_WINDOW_POS'] = str(win32api.GetSystemMetrics(0)) + "," + str(win32api.GetSystemMetrics(1))
 
-        # Получение hwnd выбранного процесса
+        # get hwnd tarrget procces
         self.target_window_hwnd = win32gui.FindWindow(None, target_process)
 
-        # Проверка на наличие процесса
+        # found target window
         if not self.target_window_hwnd:
             print(f'Could not find window with {target_process} title')
             raise Exception(f'Could not find window with {target_process} title')
 
+
+        # Set main window paramms
         th = win32process.GetWindowThreadProcessId(self.target_window_hwnd)
         win32process.AttachThreadInput(win32api.GetCurrentThreadId(), int(th[0]), True)
         win32gui.ShowWindow(self.target_window_hwnd, 5)
@@ -36,25 +37,25 @@ class Overlay():
         
         """ Параметры оверлея """
 
-        # Создания окна оверлея
+        # create overlay window
         self.overlay_screen = pygame.display.set_mode((0, 0), pygame.DOUBLEBUF | pygame.OPENGL | pygame.RESIZABLE)
 
-        # Получение hwnd оверлея
+        # get hwnd overlay window
         self.overlay_hwnd = pygame.display.get_wm_info()['window']
         self.overlay_title = target_process + " overlay"
         pygame.display.set_caption(self.overlay_title)
 
-        # Получаем текущие стили окна
+        # get overlay window styles
         ex_style = win32gui.GetWindowLong(self.overlay_hwnd, win32con.GWL_EXSTYLE)
 
-        # Добавляем стили WS_EX_LAYERED и WS_EX_TOOLWINDOW
+        # add WS_EX_LAYERED and WS_EX_TOOLWINDOW styles
         ex_style |= win32con.WS_EX_LAYERED
         ex_style |= win32con.WS_EX_TOOLWINDOW
 
-        # Устанавливаем новые стили окна
+        # intall new styles
         win32gui.SetWindowLong(self.overlay_hwnd, win32con.GWL_EXSTYLE, ex_style)
 
-        # Устанавливаем прозрачность окна на ноль (скрываем окно)
+        # install window flags
         win32gui.SetLayeredWindowAttributes(self.overlay_hwnd, 0, 0, win32con.LWA_ALPHA)
         win32gui.SetLayeredWindowAttributes(self.overlay_hwnd, 0, 255, win32con.LWA_COLORKEY | win32con.LWA_ALPHA)
         win32gui.BringWindowToTop(self.overlay_hwnd)
@@ -63,15 +64,15 @@ class Overlay():
 
         """ Интерфейс ImGui """
 
-        # Инициализация ImGui
+        # init ImGui
         imgui.create_context()
         self.impl = PygameRenderer()
 
-        # Установка размера дисплея ImGui
+        # set ImGui size
         self.io = imgui.get_io()
         self.io.display_size = win32api.GetSystemMetrics(0), win32api.GetSystemMetrics(1)
 
-        # Очистака пиксельной сетки OpenGL
+        # clear bacground OpenGL
         gl.glColorMask(True, True, True, True)
         gl.glClearColor(0, 0, 0, 0)
         gl.glClear(gl.GL_COLOR_BUFFER_BIT)
@@ -88,8 +89,6 @@ class Overlay():
         window_rect[2] -= 9
         window_rect[3] -= 9
         window_size = window_rect[2] - window_rect[0], window_rect[3] - window_rect[1]
-
-        
 
         if self.window_size_save != window_size and foreground:
             pygame.display.set_mode(window_size, pygame.DOUBLEBUF | pygame.OPENGL | pygame.RESIZABLE | pygame.NOFRAME)    
@@ -108,15 +107,12 @@ class Overlay():
             menu()
             imgui.show_test_window()
 
-        # Очистака пиксельной сетки OpenGL
         gl.glClearColor(0, 0, 0, 0)
         gl.glClear(gl.GL_COLOR_BUFFER_BIT)
 
-        # Рендер
         imgui.render()
         self.impl.render(imgui.get_draw_data())
 
-        # Обновление окна
         pygame.display.flip()
         win32gui.BringWindowToTop(self.overlay_hwnd)
         win32gui.ShowWindow(self.overlay_hwnd, win32con.SW_SHOW)
