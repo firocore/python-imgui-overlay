@@ -1,0 +1,4 @@
+pygame==2.5.2
+imgui[pygame]==2.0.0
+pywin32==306
+keyboard==0.13.5
