@@ -102,7 +102,7 @@ class Overlay():
         # Set position and size of the overlay window
         win32gui.SetWindowPos(self.overlay_hwnd, win32con.HWND_TOPMOST, 0, 0, 0, 0, win32con.SWP_NOMOVE | win32con.SWP_NOSIZE | win32con.SWP_NOACTIVATE)
         window_rect = win32gui.GetWindowRect(self.target_window_hwnd)
-        window_rect = [window_rect[0] + 9, window_rect[1] + 22, window_rect[2] - 9, window_rect[3] - 9]
+        window_rect = [window_rect[0], window_rect[1], window_rect[2], window_rect[3]]
         window_size = window_rect[2] - window_rect[0], window_rect[3] - window_rect[1]
         
         if foreground and self.window_size_save != window_size:
